@@ -16,10 +16,12 @@ Time series forecasting is a crucial task in many applications, such as stock ma
 
 ### Dataset
 
-All datasets used in this study are publicly available on Kaggle and are stored in the `data` folder. The datasets are as follows:
+All datasets used in this study are publicly available on Kaggle and are stored in the `data` folder.
 
-- **Price Information of AMZN, DPZ, BTC, NTFX** (5/2013 - 5/2019): [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) - [Folder](data/stock)
-- **Tesla Stock Price** (6/2017 - 3/2017): [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price) - [Folder](data/tesla)
-- **Daily Delhi Climate** (1/2013 - 4/2017): [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data) - [Folder](data/delhi)
-- **Superstore Sales** (2015 - 2018): [Kaggle](https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting) - [Folder](data/sales)
-- **Rain in Australia** (2008 - 2017): [Kaggle](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package) - [Folder](data/rainy)
+| Name                                          | Time            | Source                                                                                            | Folder               | Type           |
+| --------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------- | -------------------- | -------------- |
+| **Price Information of AMZN, DPZ, BTC, NTFX** | 5/2013 - 5/2019 | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [Folder](data/stock) | Regression     |
+| **Tesla Stock Price**                         | 6/2017 - 3/2017 | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [Folder](data/tesla) | Regression     |
+| **Daily Delhi Climate**                       | 1/2013 - 4/2017 | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [Folder](data/delhi) | Regression     |
+| **Superstore Sales**                          | 2015 - 2018     | [Kaggle](https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting)                            | [Folder](data/sales) | Regression     |
+| **Rain in Australia**                         | 2008 - 2017     | [Kaggle](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package)                   | [Folder](data/rainy) | Classification |
