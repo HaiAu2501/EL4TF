@@ -20,12 +20,13 @@ All datasets used in this study are publicly available on Kaggle and are stored 
 
 <div align="center">
 
-| Name                     | Period          | Source                                                                                            | Folder               | Task           |
-| ------------------------ | --------------- | ------------------------------------------------------------------------------------------------- | -------------------- | -------------- |
-| **AMZN, DPZ, BTC, NTFX** | 5/2013 - 5/2019 | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [Folder](data/stock) | Regression     |
-| **Tesla Stock Price**    | 6/2017 - 3/2017 | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [Folder](data/tesla) | Regression     |
-| **Daily Delhi Climate**  | 1/2013 - 4/2017 | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [Folder](data/delhi) | Regression     |
-| **Superstore Sales**     | 2015 - 2018     | [Kaggle](https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting)                            | [Folder](data/sales) | Regression     |
-| **Rain in Australia**    | 2008 - 2017     | [Kaggle](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package)                   | [Folder](data/rainy) | Classification |
+| Name                         | Period      | Frequency | Source                                                                                            | Folder              | Task           |
+| ---------------------------- | ----------- | --------- | ------------------------------------------------------------------------------------------------- | ------------------- | -------------- |
+| **3 Stocks and Bitcoin**     | 2013 - 2019 | daily     | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [stock](data/stock) | Regression     |
+| **Tesla Stock Price**        | 2017 - 2017 | daily     | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [tesla](data/tesla) | Regression     |
+| **Daily Delhi Climate**      | 2013 - 2017 | daily     | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [delhi](data/delhi) | Regression     |
+| **Superstore Sales**         | 2015 - 2018 | daily     | [Kaggle](https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting)                            | [sales](data/sales) | Regression     |
+| **Covid-19 Confirmed Cases** | 2020 - 2022 | daily     | [Kaggle](https://www.kaggle.com/datasets/anandhuh/covid19-confirmed-cases-kerala)                 | [covid](data/covid) | Regression     |
+| **Rain in Australia**        | 2008 - 2017 | daily     | [Kaggle](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package)                   | [rainy](data/rainy) | Classification |
 
 </div>
