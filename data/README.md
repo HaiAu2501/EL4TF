@@ -1,6 +1,6 @@
 # DATA DESCRIPTION
 
-## 1. _3 Stocks & Bitcoin_ ([stock](stock))
+# 1. _3 Stocks & Bitcoin_ ([stock](stock))
 
 The dataset contains historical stock and cryptocurrency price data from various sources. It consists of 1,520 observations and 5 columns. The columns are as follows:
 
@@ -25,7 +25,7 @@ The dataset can be used to train machine learning models such as linear regressi
 
 ---
 
-### 2. _Tesla Stock Price_ ([tesla](tesla))
+# 2. _Tesla Stock Price_ ([tesla](tesla))
 
 The dataset contains historical stock price data with 1,692 observations and 7 columns. The columns are as follows:
 
@@ -124,7 +124,7 @@ To predict the total sales for the next day, we can engineer the following featu
 
 ---
 
-## 5. _Covid-19 Cases_ ([covid](covid))
+# 5. _Covid-19 Cases_ ([covid](covid))
 
 The dataset contains daily records of confirmed cases of an event (e.g., a disease outbreak) with 841 observations and 2 columns. The columns are as follows:
 
@@ -148,7 +148,7 @@ To predict the next day's confirmed cases, potential features include:
 
 ---
 
-## 6. _Rain in Australia_ ([rainy](rainy))
+# 6. _Rain in Australia_ ([rainy](rainy))
 
 The dataset contains weather observations from multiple locations over several years. It includes 145,460 observations and 23 columns, which are as follows:
 
