@@ -1,0 +1,30 @@
+{
+    "name": "devcontainer",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "mechatroner.rainbow-csv",
+                "ms-azuretools.vscode-docker",
+                "ms-python.autopep8",
+                "ms-python.mypy-type-checker",
+                "ms-python.python"
+            ],
+            "settings": {
+                "autopep8.cwd": "${containerWorkspaceFolder}",
+                "editor.formatOnSave": true,
+                "editor.tabSize": 4,
+                "extensions.ignoreRecommendations": false,
+                "files.insertFinalNewline": true,
+                "git.autorefresh": true,
+                "mypy-type-checker.preferDaemon": false,
+                "python.defaultInterpreterPath": "/venv/bin/python",
+                "[python]": {
+                    "editor.tabSize": 4
+                }
+            }
+        }
+    },
+    "dockerComposeFile": "compose.yml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/el4tf"
+}

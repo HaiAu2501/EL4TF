@@ -1,0 +1,13 @@
+# Reference: https://docs.docker.com/reference/compose-file/
+name: el4tf
+
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    command: bash -c "sleep infinity"
+    container_name: devcontainer
+    volumes:
+      - ..:/workspaces/el4tf
+    working_dir: /workspaces/el4tf
