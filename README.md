@@ -1,5 +1,11 @@
 # 🌟 EL4TF: A Study on Ensemble Learning in Time-Series Forecasting 📊
 
+<div align="center">
+
+![image](assets/banner.png)
+
+</div>
+
 ## 🚀 News
 
 - **03/2025:** Project initiated.
