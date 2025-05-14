@@ -17,6 +17,10 @@
                 "extensions.ignoreRecommendations": false,
                 "files.insertFinalNewline": true,
                 "git.autorefresh": true,
+                "mypy-type-checker.args": [
+                    "--cache-dir=/.mypy_cache",
+                    "--follow-untyped-imports"
+                ],
                 "mypy-type-checker.preferDaemon": false,
                 "python.defaultInterpreterPath": "/venv/bin/python",
                 "[python]": {

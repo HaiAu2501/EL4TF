@@ -13,3 +13,5 @@ RUN python3 -m venv /venv
 
 COPY requirements.txt /tmp/
 RUN /venv/bin/pip install -r /tmp/requirements.txt
+
+RUN /venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
