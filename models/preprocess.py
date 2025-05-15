@@ -148,8 +148,6 @@ def preprocess_vn30(
     nonlinear_feature: bool = False,
     autocorr_feature: bool = False,
     trend_feature: bool = False,
-    volvol_feature: bool = False,
-    entropy_feature: bool = False,
 ):
     data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
     df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
