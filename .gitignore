@@ -4,3 +4,4 @@ venv
 env/
 .vscode/
 .devcontainer/
+.env/
