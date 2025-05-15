@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Tuple, TypedDict, Union
+from typing import Callable, Iterable, List, Tuple, TypeVar, TypedDict, Union
 
 from matplotlib import axes, pyplot
 import numpy
@@ -13,6 +13,7 @@ from sklearn.metrics import (
 
 
 __all__ = ()
+T = TypeVar("T")
 MatrixLike = Union[numpy.ndarray, pandas.DataFrame]
 
 
@@ -60,3 +61,16 @@ def extract_xy(table: pandas.DataFrame, *, context_size: int) -> Tuple[pandas.Da
     table.dropna(inplace=True)
 
     return table[output_names], table[original]
+
+
+def rank_metrics(keys: Iterable[T], *metrics: Callable[[T], float]) -> T:
+    keys = list(keys)
+    scores = {k: 0 for k in keys}
+
+    for metric in metrics:
+        ordered = sorted((metric(k), k) for k in keys)
+
+        for index, (_, k) in enumerate(ordered):
+            scores[k] += index
+
+    return min(keys, key=scores.__getitem__)

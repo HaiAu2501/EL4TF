@@ -1,7 +1,8 @@
-.private/
 __pycache__/
-venv
-env/
-.vscode/
 .devcontainer/
 .env/
+.private/
+.vscode/
+env/
+outputs/
+venv/
