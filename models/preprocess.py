@@ -224,5 +224,5 @@ def preprocess_vn30(
 
     return X_train, Y_train, X_val, Y_val, X_test, Y_test
 
-if __name__ == "__main__":
-    preprocess_vn30('ACB', 30, 0.15, True, True, True, True, True, True, True)
+# if __name__ == "__main__":
+#     preprocess_vn30('ACB', 30, 0.15, True, True, True, True, True, True, True)
