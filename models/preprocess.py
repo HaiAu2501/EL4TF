@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from typing import Optional
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -140,22 +141,23 @@ def _make_features(
     df_full.reset_index(drop=True, inplace=True)
     return df_full
 
-def process_file(symbol: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _process_file(symbol: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
     df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
     df_test = pd.read_csv(data_dir / f'{symbol}_test.csv', parse_dates=['time'])
     return df_train, df_test
 
-def preprocess_vn30(
+def preprocess_v1(
     symbol: str,
     lag: int = 30,
     val: float = 0.0, 
-    calendar_feature: bool = False,
-    rolling_feature: bool = False,
-    technical_feature: bool = False,
-    nonlinear_feature: bool = False,
-    autocorr_feature: bool = False,
-    trend_feature: bool = False,
+    calendar_feature: bool = True,
+    rolling_feature: bool = True,
+    technical_feature: bool = True,
+    nonlinear_feature: bool = True,
+    autocorr_feature: bool = True,
+    trend_feature: bool = True,
+    scaler: Optional[StandardScaler] = None,
     verbose: bool = False,
 ):
     """
@@ -171,6 +173,7 @@ def preprocess_vn30(
         nonlinear_feature (bool): Whether to include nonlinear features.
         autocorr_feature (bool): Whether to include autocorrelation features.
         trend_feature (bool): Whether to include trend features.
+        scaler (StandardScaler): The scaler to use for feature scaling.
         verbose (bool): Whether to print preprocessing information.
 
     Returns:
@@ -181,7 +184,7 @@ def preprocess_vn30(
         X_test (np.ndarray): The test features.
         Y_test (np.ndarray): The test targets.
     """
-    df_train, df_test = process_file(symbol)
+    df_train, df_test = _process_file(symbol)
 
     df_train = _make_features(
         df_train,
@@ -205,16 +208,18 @@ def preprocess_vn30(
     )
 
     # Split features and target
-    drop_cols = ['time'] + TARGETS
-    X_train_full = df_train.drop(columns=drop_cols).values
-    Y_train_full = df_train[TARGETS].values
-    X_test = df_test.drop(columns=drop_cols).values
-    Y_test = df_test[TARGETS].values
+    df_train = df_train.drop(columns=['time'])
+    df_test = df_test.drop(columns=['time'])
 
-    # Scale features
-    scaler = StandardScaler()
-    X_train_full = scaler.fit_transform(X_train_full)
-    X_test = scaler.transform(X_test)
+    # Normalize the data
+    if scaler is not None:
+        df_train = scaler.fit_transform(df_train)
+        df_test = scaler.transform(df_test)
+
+    X_train_full = df_train.drop(columns=TARGETS).values
+    Y_train_full = df_train[TARGETS].values
+    X_test = df_test.drop(columns=TARGETS).values
+    Y_test = df_test[TARGETS].values
 
     train_size = int(len(X_train_full) * (1 - val))
 
@@ -229,11 +234,12 @@ def preprocess_vn30(
 
     return X_train, Y_train, X_val, Y_val, X_test, Y_test
 
-def preprocess_loader(
+def preprocess_v2(
 	symbol: str,
 	lag: int = 30,
 	val: float = 0.1,
-	batch_size: int = 64,
+	batch_size: int = 32,
+    scaler: Optional[StandardScaler] = None,
 	verbose: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     """
@@ -251,24 +257,24 @@ def preprocess_loader(
         valid_loader (DataLoader): The DataLoader for the validation set.
         test_loader (DataLoader): The DataLoader for the test set.
     """
-    df_train, df_test = process_file(symbol)
+    df_train, df_test = _process_file(symbol)
     df_train = df_train[TARGETS].values
     df_test = df_test[TARGETS].values
 
     # Normalize the data
-    scaler = StandardScaler()
-    df_train = scaler.fit_transform(df_train)
-    df_test = scaler.transform(df_test)
+    if scaler is not None:
+        df_train = scaler.fit_transform(df_train)
+        df_test = scaler.transform(df_test)
 
     X_full = []
     Y_full = []
 
     for i in range(len(df_train) - lag):
-        X_full.append(df_train[i : i + lag]) # (lag, len(TARGETS))
-        Y_full.append(df_train[i + lag]) # (len(TARGETS),)
+        X_full.append(df_train[i : i + lag]) # (window_size, n_dimensions)
+        Y_full.append(df_train[i + lag]) # (n_dimensions,)
 
-    X_full = np.stack(X_full) # (n_samples, lag, len(TARGETS))
-    Y_full = np.stack(Y_full) # (n_samples, len(TARGETS))
+    X_full = np.stack(X_full) # (n_samples, window_size, n_dimensions)
+    Y_full = np.stack(Y_full) # (n_samples, n_dimensions)
 
     X_test = []
     Y_test = []
@@ -277,8 +283,8 @@ def preprocess_loader(
         X_test.append(df_test[i : i + lag])
         Y_test.append(df_test[i + lag])
 
-    X_test = np.stack(X_test) # (n_samples, lag, len(TARGETS))
-    Y_test = np.stack(Y_test) # (n_samples, len(TARGETS))
+    X_test = np.stack(X_test) # (n_samples, window_size, n_dimensions)
+    Y_test = np.stack(Y_test) # (n_samples, n_dimensions)
 
     n_samples = X_full.shape[0]
     n_valid = int(n_samples * val)
@@ -311,4 +317,4 @@ def preprocess_loader(
 
 # Example usage:
 # if __name__ == "__main__":
-#     preprocess_vn30('ACB', 30, 0.15, True, True, True, True, True, True, True)
+#     preprocess_v1('ACB', 30, 0.15, verbose=True)
