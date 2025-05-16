@@ -141,7 +141,8 @@ def _make_features(
 
 def preprocess_vn30(
     symbol: str,
-    lag: int = 30, 
+    lag: int = 30,
+    val: float = 0.0, 
     calendar_feature: bool = False,
     rolling_feature: bool = False,
     technical_feature: bool = False,
@@ -150,6 +151,29 @@ def preprocess_vn30(
     trend_feature: bool = False,
     verbose: bool = False,
 ):
+    """
+    Preprocess the VN30 dataset for a given symbol.
+
+    Parameters:
+        symbol (str): The stock symbol to preprocess.
+        lag (int): The number of lag features to create.
+        val (float): The proportion of the training set to use for validation.
+        calendar_feature (bool): Whether to include calendar features.
+        rolling_feature (bool): Whether to include rolling features.
+        technical_feature (bool): Whether to include technical features.
+        nonlinear_feature (bool): Whether to include nonlinear features.
+        autocorr_feature (bool): Whether to include autocorrelation features.
+        trend_feature (bool): Whether to include trend features.
+        verbose (bool): Whether to print preprocessing information.
+
+    Returns:
+        X_train (np.ndarray): The training features.
+        Y_train (np.ndarray): The training targets.
+        X_val (np.ndarray): The validation features.
+        Y_val (np.ndarray): The validation targets.
+        X_test (np.ndarray): The test features.
+        Y_test (np.ndarray): The test targets.
+    """
     data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
     df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
     df_test = pd.read_csv(data_dir / f'{symbol}_test.csv', parse_dates=['time'])
@@ -177,18 +201,22 @@ def preprocess_vn30(
 
     # Split features and target
     drop_cols = ['time'] + TARGETS
-    X_train = df_train.drop(columns=drop_cols).values
-    Y_train = df_train[TARGETS].values
+    X_train_full = df_train.drop(columns=drop_cols).values
+    Y_train_full = df_train[TARGETS].values
     X_test = df_test.drop(columns=drop_cols).values
     Y_test = df_test[TARGETS].values
 
     # Scale features
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
+    X_train_full = scaler.fit_transform(X_train_full)
     X_test = scaler.transform(X_test)
 
-    X_val = X_train[-int(len(X_train)*0.15):]
-    Y_val = Y_train[-int(len(Y_train)*0.15):]
+    train_size = int(len(X_train_full) * (1 - val))
+
+    X_train = X_train_full[:train_size]
+    Y_train = Y_train_full[:train_size]
+    X_val = X_train_full[train_size:]
+    Y_val = Y_train_full[train_size:]
 
     if verbose:
         print(f"=== Preprocessing {symbol} ===")
@@ -197,4 +225,4 @@ def preprocess_vn30(
     return X_train, Y_train, X_val, Y_val, X_test, Y_test
 
 if __name__ == "__main__":
-    preprocess_vn30('ACB', 30, True, True, True, True, True, True, True)
+    preprocess_vn30('ACB', 30, 0.15, True, True, True, True, True, True, True)
