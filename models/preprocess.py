@@ -1,8 +1,10 @@
 import os
+import torch
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
+from torch.utils.data import TensorDataset, DataLoader
 
 VN30 = [
     'ACB', 'BCM', 'BID', 'BVH', 'CTG', 
@@ -138,6 +140,11 @@ def _make_features(
     df_full.reset_index(drop=True, inplace=True)
     return df_full
 
+def process_file(symbol: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
+    df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
+    df_test = pd.read_csv(data_dir / f'{symbol}_test.csv', parse_dates=['time'])
+    return df_train, df_test
 
 def preprocess_vn30(
     symbol: str,
@@ -167,16 +174,14 @@ def preprocess_vn30(
         verbose (bool): Whether to print preprocessing information.
 
     Returns:
-        X_train (np.ndarray): The training features.
-        Y_train (np.ndarray): The training targets.
+        X_train (np.ndarray): The training features, shape (n_samples, n_features).
+        Y_train (np.ndarray): The training targets, shape (n_samples, n_targets).
         X_val (np.ndarray): The validation features.
         Y_val (np.ndarray): The validation targets.
         X_test (np.ndarray): The test features.
         Y_test (np.ndarray): The test targets.
     """
-    data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
-    df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
-    df_test = pd.read_csv(data_dir / f'{symbol}_test.csv', parse_dates=['time'])
+    df_train, df_test = process_file(symbol)
 
     df_train = _make_features(
         df_train,
@@ -224,5 +229,65 @@ def preprocess_vn30(
 
     return X_train, Y_train, X_val, Y_val, X_test, Y_test
 
+def preprocess_loader(
+	symbol: str,
+	lag: int = 30,
+	val: float = 0.1,
+	batch_size: int = 64,
+	verbose: bool = False,
+) -> tuple[DataLoader, DataLoader]:
+    """
+    Preprocess the VN30 dataset for a given symbol and return DataLoader objects.
+
+    Parameters:
+        symbol (str): The stock symbol to preprocess.
+        lag (int): The number of lag features to create.
+        val (float): The proportion of the training set to use for validation.
+        batch_size (int): The batch size for the DataLoader.
+        verbose (bool): Whether to print preprocessing information.
+
+    Returns:
+        train_loader (DataLoader): The DataLoader for the training set.
+        valid_loader (DataLoader): The DataLoader for the validation set.
+    """
+    df_train, df_test = process_file(symbol)
+    df_train = df_train[TARGETS].values
+    df_test = df_test[TARGETS].values
+    X_full = []
+    Y_full = []
+
+    for i in range(len(df_train) - lag):
+        X_full.append(df_train[i : i + lag]) # (lag, len(TARGETS))
+        Y_full.append(df_train[i + lag]) # (len(TARGETS),)
+
+    X_full = np.stack(X_full) # (n_samples, lag, len(TARGETS))
+    Y_full = np.stack(Y_full) # (n_samples, len(TARGETS))
+
+    n_samples = X_full.shape[0]
+    n_valid = int(n_samples * val)
+    n_train = n_samples - n_valid
+
+    X_train = X_full[:n_train]
+    Y_train = Y_full[:n_train]
+    X_valid = X_full[n_train:]
+    Y_valid = Y_full[n_train:]
+
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    Y_train = torch.tensor(Y_train, dtype=torch.float32)
+    X_valid = torch.tensor(X_valid, dtype=torch.float32)
+    Y_valid = torch.tensor(Y_valid, dtype=torch.float32)
+
+    train_dataset = TensorDataset(X_train, Y_train)
+    valid_dataset = TensorDataset(X_valid, Y_valid)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+
+    if verbose:
+        print(f"Train shape: {X_train.shape}, {Y_train.shape}")
+        print(f"Valid shape: {X_valid.shape}, {Y_valid.shape}")
+
+    return train_loader, valid_loader
+
+# Example usage:
 # if __name__ == "__main__":
 #     preprocess_vn30('ACB', 30, 0.15, True, True, True, True, True, True, True)
