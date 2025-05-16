@@ -249,6 +249,7 @@ def preprocess_loader(
     Returns:
         train_loader (DataLoader): The DataLoader for the training set.
         valid_loader (DataLoader): The DataLoader for the validation set.
+        test_loader (DataLoader): The DataLoader for the test set.
     """
     df_train, df_test = process_file(symbol)
     df_train = df_train[TARGETS].values
