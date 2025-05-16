@@ -255,6 +255,11 @@ def preprocess_loader(
     df_train = df_train[TARGETS].values
     df_test = df_test[TARGETS].values
 
+    # Normalize the data
+    scaler = StandardScaler()
+    df_train = scaler.fit_transform(df_train)
+    df_test = scaler.transform(df_test)
+
     X_full = []
     Y_full = []
 
