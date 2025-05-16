@@ -313,7 +313,7 @@ def preprocess_v2(
         print(f"Train shape: {X_train.shape}, {Y_train.shape}")
         print(f"Valid shape: {X_valid.shape}, {Y_valid.shape}")
 
-    return train_loader, valid_loader, test_loader, scaler
+    return train_loader, valid_loader, test_loader
 
 # Example usage:
 # if __name__ == "__main__":
