@@ -253,6 +253,7 @@ def preprocess_loader(
     df_train, df_test = process_file(symbol)
     df_train = df_train[TARGETS].values
     df_test = df_test[TARGETS].values
+
     X_full = []
     Y_full = []
 
@@ -262,6 +263,16 @@ def preprocess_loader(
 
     X_full = np.stack(X_full) # (n_samples, lag, len(TARGETS))
     Y_full = np.stack(Y_full) # (n_samples, len(TARGETS))
+
+    X_test = []
+    Y_test = []
+
+    for i in range(len(df_test) - lag):
+        X_test.append(df_test[i : i + lag])
+        Y_test.append(df_test[i + lag])
+
+    X_test = np.stack(X_test) # (n_samples, lag, len(TARGETS))
+    Y_test = np.stack(Y_test) # (n_samples, len(TARGETS))
 
     n_samples = X_full.shape[0]
     n_valid = int(n_samples * val)
@@ -276,17 +287,21 @@ def preprocess_loader(
     Y_train = torch.tensor(Y_train, dtype=torch.float32)
     X_valid = torch.tensor(X_valid, dtype=torch.float32)
     Y_valid = torch.tensor(Y_valid, dtype=torch.float32)
+    X_test = torch.tensor(X_test, dtype=torch.float32)
+    Y_test = torch.tensor(Y_test, dtype=torch.float32)
 
     train_dataset = TensorDataset(X_train, Y_train)
     valid_dataset = TensorDataset(X_valid, Y_valid)
+    test_dataset = TensorDataset(X_test, Y_test)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     if verbose:
         print(f"Train shape: {X_train.shape}, {Y_train.shape}")
         print(f"Valid shape: {X_valid.shape}, {Y_valid.shape}")
 
-    return train_loader, valid_loader
+    return train_loader, valid_loader, test_loader
 
 # Example usage:
 # if __name__ == "__main__":
