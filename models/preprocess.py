@@ -148,6 +148,7 @@ def preprocess_vn30(
     nonlinear_feature: bool = False,
     autocorr_feature: bool = False,
     trend_feature: bool = False,
+    verbose: bool = False,
 ):
     data_dir = Path(__file__).resolve().parent.parent / 'data' / 'vn30'
     df_train = pd.read_csv(data_dir / f'{symbol}_train.csv', parse_dates=['time'])
@@ -186,10 +187,14 @@ def preprocess_vn30(
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
-    print(f"=== Preprocessing {symbol} ===")
-    print(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
+    X_val = X_train[-int(len(X_train)*0.15):]
+    Y_val = Y_train[-int(len(Y_train)*0.15):]
 
-    return X_train, Y_train, X_test, Y_test
+    if verbose:
+        print(f"=== Preprocessing {symbol} ===")
+        print(f"Train shape: {X_train.shape}, Val shape: {X_val.shape}, Test shape: {X_test.shape}")
 
-# if __name__ == "__main__":
-#     preprocess_vn30('ACB', 30, True, True, True, True, True, True)
+    return X_train, Y_train, X_val, Y_val, X_test, Y_test
+
+if __name__ == "__main__":
+    preprocess_vn30('ACB', 30, True, True, True, True, True, True, True)
