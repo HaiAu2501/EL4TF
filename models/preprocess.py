@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Optional
+from typing import Required
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -149,6 +149,7 @@ def _process_file(symbol: str) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def preprocess_v1(
     symbol: str,
+    scaler: StandardScaler,
     lag: int = 30,
     val: float = 0.0, 
     calendar_feature: bool = True,
@@ -157,7 +158,6 @@ def preprocess_v1(
     nonlinear_feature: bool = True,
     autocorr_feature: bool = True,
     trend_feature: bool = True,
-    scaler: Optional[StandardScaler] = None,
     verbose: bool = False,
 ):
     """
@@ -165,6 +165,7 @@ def preprocess_v1(
 
     Parameters:
         symbol (str): The stock symbol to preprocess.
+        scaler (StandardScaler): The scaler to use for feature scaling.
         lag (int): The number of lag features to create.
         val (float): The proportion of the training set to use for validation.
         calendar_feature (bool): Whether to include calendar features.
@@ -173,7 +174,6 @@ def preprocess_v1(
         nonlinear_feature (bool): Whether to include nonlinear features.
         autocorr_feature (bool): Whether to include autocorrelation features.
         trend_feature (bool): Whether to include trend features.
-        scaler (StandardScaler): The scaler to use for feature scaling.
         verbose (bool): Whether to print preprocessing information.
 
     Returns:
@@ -211,15 +211,24 @@ def preprocess_v1(
     df_train = df_train.drop(columns=['time'])
     df_test = df_test.drop(columns=['time'])
 
-    # Normalize the data
-    if scaler is not None:
-        df_train = scaler.fit_transform(df_train)
-        df_test = scaler.transform(df_test)
+    cols = df_train.columns.tolist()
 
-    X_train_full = df_train.drop(columns=TARGETS).values
-    Y_train_full = df_train[TARGETS].values
-    X_test = df_test.drop(columns=TARGETS).values
-    Y_test = df_test[TARGETS].values
+    df_train_scaled = pd.DataFrame(
+        scaler.fit_transform(df_train),
+        columns=cols,
+        index=df_train.index
+    )
+
+    df_test_scaled = pd.DataFrame(
+        scaler.transform(df_test),
+        columns=cols,
+        index=df_test.index
+    )
+
+    X_train_full = df_train_scaled.drop(columns=TARGETS).values
+    Y_train_full = df_train_scaled[TARGETS].values
+    X_test = df_test_scaled.drop(columns=TARGETS).values
+    Y_test = df_test_scaled[TARGETS].values
 
     train_size = int(len(X_train_full) * (1 - val))
 
@@ -236,10 +245,10 @@ def preprocess_v1(
 
 def preprocess_v2(
 	symbol: str,
+    scaler: StandardScaler,
 	lag: int = 30,
 	val: float = 0.1,
 	batch_size: int = 32,
-    scaler: Optional[StandardScaler] = None,
 	verbose: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     """
@@ -262,9 +271,8 @@ def preprocess_v2(
     df_test = df_test[TARGETS].values
 
     # Normalize the data
-    if scaler is not None:
-        df_train = scaler.fit_transform(df_train)
-        df_test = scaler.transform(df_test)
+    df_train = scaler.fit_transform(df_train)
+    df_test = scaler.transform(df_test)
 
     X_full = []
     Y_full = []
@@ -317,10 +325,10 @@ def preprocess_v2(
 
 def preprocess_v3(
 	symbol: str,
+    scaler: StandardScaler,
 	lag: int = 30,
 	val: float = 0.1,
 	batch_size: int = 32,
-    scaler: Optional[StandardScaler] = None,
 	verbose: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     """
@@ -343,9 +351,8 @@ def preprocess_v3(
     df_test = df_test[TARGETS].values
 
     # Normalize the data
-    if scaler is not None:
-        df_train = scaler.fit_transform(df_train)
-        df_test = scaler.transform(df_test)
+    df_train = scaler.fit_transform(df_train)
+    df_test = scaler.transform(df_test)
 
     X_full = []
     Y_full = []
