@@ -149,7 +149,6 @@ def _process_file(symbol: str) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def preprocess_v1(
     symbol: str,
-    scaler: StandardScaler,
     lag: int = 30,
     val: float = 0.0, 
     calendar_feature: bool = True,
@@ -165,7 +164,6 @@ def preprocess_v1(
 
     Parameters:
         symbol (str): The stock symbol to preprocess.
-        scaler (StandardScaler): The scaler to use for feature scaling.
         lag (int): The number of lag features to create.
         val (float): The proportion of the training set to use for validation.
         calendar_feature (bool): Whether to include calendar features.
@@ -211,24 +209,19 @@ def preprocess_v1(
     df_train = df_train.drop(columns=['time'])
     df_test = df_test.drop(columns=['time'])
 
-    cols = df_train.columns.tolist()
+    feature_scaler = StandardScaler()
+    target_scaler = StandardScaler()
 
-    df_train_scaled = pd.DataFrame(
-        scaler.fit_transform(df_train),
-        columns=cols,
-        index=df_train.index
-    )
+    X_train_full = df_train.drop(columns=TARGETS).values
+    Y_train_full = df_train[TARGETS].values
+    X_test = df_test.drop(columns=TARGETS).values
+    Y_test = df_test[TARGETS].values
 
-    df_test_scaled = pd.DataFrame(
-        scaler.transform(df_test),
-        columns=cols,
-        index=df_test.index
-    )
-
-    X_train_full = df_train_scaled.drop(columns=TARGETS).values
-    Y_train_full = df_train_scaled[TARGETS].values
-    X_test = df_test_scaled.drop(columns=TARGETS).values
-    Y_test = df_test_scaled[TARGETS].values
+    # Normalize the data
+    X_train_full = feature_scaler.fit_transform(X_train_full)
+    Y_train_full = target_scaler.fit_transform(Y_train_full)
+    X_test = feature_scaler.transform(X_test)
+    Y_test = target_scaler.transform(Y_test)
 
     train_size = int(len(X_train_full) * (1 - val))
 
@@ -241,7 +234,15 @@ def preprocess_v1(
         print(f"=== Preprocessing {symbol} ===")
         print(f"Train shape: {X_train.shape}, Val shape: {X_val.shape}, Test shape: {X_test.shape}")
 
-    return X_train, Y_train, X_val, Y_val, X_test, Y_test
+    return {
+        "train": (X_train, Y_train),
+        "val": (X_val, Y_val),
+        "test": (X_test, Y_test),
+        "scaler": {
+            "feature": feature_scaler, 
+            "target": target_scaler, # When predicting, we need to inverse transform the target
+        },
+    }
 
 def preprocess_v2(
 	symbol: str,
