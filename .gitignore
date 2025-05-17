@@ -7,3 +7,5 @@ env/
 outputs/
 venv/
 bin/
+Data/
+PYTORCH_NOTEBOOKS/
