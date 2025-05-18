@@ -13,7 +13,7 @@ ROOT = Path(__file__).parent.parent.parent.resolve()
 sys.path.append(str(ROOT / "models"))
 
 
-from preprocess import VN30, preprocess_vn30  # type: ignore  # noqa
+from preprocess import VN30, preprocess_v1  # type: ignore  # noqa
 from RVFL.utils import Metrics, metrics  # type: ignore  # noqa
 
 
@@ -117,53 +117,72 @@ class EDRVFL(Model):
 
 
 def evaluate(*, symbol: str, model_init: Callable[[int], Model]) -> Metrics:
-    train_input, train_output, _, _, test_input, test_output = preprocess_vn30(symbol, val=0)
-    model = model_init(train_input.shape[1])
-    model.fit(train_input, train_output)
-    return metrics(test_output, model.predict(test_input))
+    packed = preprocess_v1(
+        symbol,
+        lag=30,
+        val=0.0,
+        calendar_feature=False,
+        rolling_feature=False,
+        technical_feature=False,
+        nonlinear_feature=False,
+        autocorr_feature=False,
+        trend_feature=False,
+    )
+    x_train, y_train = packed["train"]
+    x_test, y_test = packed["test"]
+    target_scaler = packed["scaler"]["target"]
+
+    model = model_init(x_train.shape[1])
+    model.fit(x_train, y_train)
+
+    return metrics(
+        target_scaler.inverse_transform(y_test),
+        target_scaler.inverse_transform(model.predict(x_test)),
+    )
 
 
-def test(*, output: Path, model_init: Callable[[int], Model]) -> None:
-    with output.open("w", encoding="utf-8", buffering=1) as writer:
-        writer.write("sep=,\n")
-        writer.write("Symbol,[test] RMSE,[test] MAPE,[test] R2\n")
+output = ROOT / "models" / "RVFL" / "rvfl.csv"
+with output.open("w", encoding="utf-8", buffering=1) as csv:
+    csv.write("sep=,\n[R-squared] Model,")
+    csv.write(",".join(VN30))
 
-        for symbol in VN30:
-            result = evaluate(symbol=symbol, model_init=model_init)
-            writer.write(
-                ",".join([
-                    symbol,
-                    str(result["rmse"]),
-                    str(result["mape"]),
-                    str(result["r2"]),
-                ])
-            )
-            writer.write("\n")
+    csv.write("\nRVFL")
+    for symbol in VN30:
+        metric = evaluate(
+            symbol=symbol,
+            model_init=lambda input_size: DRVFL.initialize(
+                input_size,
+                seed=42,
+                hidden_sizes=(32,),
+            ),
+        )
+        csv.write(",")
+        csv.write(str(metric["r2"]))
 
+    csv.write("\ndRVFL")
+    for symbol in VN30:
+        metric = evaluate(
+            symbol=symbol,
+            model_init=lambda input_size: DRVFL.initialize(
+                input_size,
+                seed=42,
+                hidden_sizes=(128, 64, 32),
+            ),
+        )
+        csv.write(",")
+        csv.write(str(metric["r2"]))
 
-outputs = ROOT / "outputs"
-outputs.mkdir(parents=True, exist_ok=True)
-test(
-    output=outputs / "rvfl.csv",
-    model_init=lambda input_size: DRVFL.initialize(
-        input_size,
-        seed=42,
-        hidden_sizes=(32,),
-    ),
-)
-test(
-    output=outputs / "drvfl.csv",
-    model_init=lambda input_size: DRVFL.initialize(
-        input_size,
-        seed=42,
-        hidden_sizes=(128, 64, 32),
-    ),
-)
-test(
-    output=outputs / "edrvfl.csv",
-    model_init=lambda input_size: EDRVFL.initialize(
-        input_size,
-        models_count=8,
-        seed=42,
-    ),
-)
+    csv.write("\nedRVFL")
+    for symbol in VN30:
+        metric = evaluate(
+            symbol=symbol,
+            model_init=lambda input_size: EDRVFL.initialize(
+                input_size,
+                models_count=8,
+                seed=42,
+            ),
+        )
+        csv.write(",")
+        csv.write(str(metric["r2"]))
+
+    csv.write("\n")
