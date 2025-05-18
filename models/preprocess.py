@@ -16,7 +16,7 @@ VN30 = [
     'VIC', 'VJC', 'VNM', 'VPB', 'VRE',
 ]
 
-TARGETS = ['open', 'high', 'low', 'close', 'volume'] # What we want to predict
+TARGETS = ['open', 'high', 'low', 'close'] # What we want to predict
 
 def _make_features(
     df: pd.DataFrame,
@@ -185,6 +185,9 @@ def preprocess_v1(
     """
     df_train, df_test = _process_file(symbol)
 
+    df_train = df_train.drop(columns=['volume'])
+    df_test = df_test.drop(columns=['volume'])
+
     df_train = _make_features(
         df_train,
         lag,
@@ -321,7 +324,7 @@ def preprocess_v2(
     train_dataset = TensorDataset(X_train, Y_train)
     valid_dataset = TensorDataset(X_valid, Y_valid)
     test_dataset = TensorDataset(X_test, Y_test)
-    
+
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
