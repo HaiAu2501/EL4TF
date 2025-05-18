@@ -19,51 +19,50 @@ from preprocess import VN30, preprocess_v2  # type: ignore  # noqa
 warnings.filterwarnings("ignore")
 
 
-class TCN(nn.Module):
-    def __init__(self, n_channels=5, window_size=30, hidden_dim=64, output_dim=5, p_dropout=0.2):
+class LSTM(nn.Module):
+    def __init__(self, n_features, n_layers, hidden_dim, fc_dim, output_dim, dropout=0.2):
         super().__init__()
-        # Conv block với BatchNorm + Dropout
-        self.conv_block = nn.Sequential(
-            nn.Conv1d(in_channels=n_channels, out_channels=32, kernel_size=3, padding=1),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.Dropout(p_dropout),
-
-            nn.Conv1d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Dropout(p_dropout),
+        # LSTM với dropout giữa các layer (chỉ active khi n_layers > 1)
+        self.lstm = nn.LSTM(
+            input_size=n_features,
+            hidden_size=hidden_dim,
+            num_layers=n_layers,
+            batch_first=True,
+            dropout=dropout
         )
-        # Global pooling
-        self.pool = nn.AdaptiveAvgPool1d(1)  # gom về (batch, 64, 1)
-
-        # MLP head với thêm dropout
+        # Dropout sau khi lấy last-step output
+        self.dropout = nn.Dropout(dropout)
+        # FC phụ: hidden_dim → fc_dim → output_dim
         self.fc = nn.Sequential(
-            nn.Linear(64, hidden_dim),
+            nn.Linear(hidden_dim, fc_dim),
             nn.ReLU(),
-            nn.Dropout(p_dropout),
-            nn.Linear(hidden_dim, output_dim)
+            nn.Dropout(dropout),
+            nn.Linear(fc_dim, output_dim)
         )
 
     def forward(self, x):
-        # x: (batch, n_channels, window_size)
-        x = self.conv_block(x)       # → (batch, 64, window_size)
-        x = self.pool(x).squeeze(-1)  # → (batch, 64)
-        x = self.fc(x)               # → (batch, output_dim)
-        return x
+        # x: (batch_size, seq_len, n_features)
+        lstm_out, _ = self.lstm(x)
+        # lstm_out: (batch_size, seq_len, hidden_dim)
+        last = lstm_out[:, -1, :]
+        # last: (batch_size, hidden_dim)
+        dropped = self.dropout(last)
+        # dropped: (batch_size, hidden_dim)
+        y_pred = self.fc(dropped)
+        # y_pred: (batch_size, output_dim)
+        return y_pred
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = TCN(
-    n_channels=4,
-    window_size=30,
-    hidden_dim=256,
-    output_dim=4,
-    p_dropout=0.1
-).to(device)
-
-
-with open(CWD / "tcn.csv", "w", encoding="utf-8", buffering=1) as csv:
+model = LSTM(
+    n_features=4,    # [open, high, low, close]
+    n_layers=1,
+    hidden_dim=64,
+    fc_dim=32,
+    output_dim=4,    # dự báo [open, high, low, close]
+    dropout=0.3
+)
+with open(CWD / "lstm.csv", "w", encoding="utf-8", buffering=1) as csv:
     csv.write("Checkpoints/Tests,")
     csv.write(",".join(VN30))
     csv.write("\n")
@@ -71,11 +70,11 @@ with open(CWD / "tcn.csv", "w", encoding="utf-8", buffering=1) as csv:
     with torch.no_grad():
         for i, ckpt_symbol in enumerate(VN30):
             csv.write(ckpt_symbol)
-            model.load_state_dict(torch.load(CWD / "checkpoints" / f"tcn_{ckpt_symbol}.pth", map_location=device))
+            model.load_state_dict(torch.load(CWD / "checkpoints" / f"lstm_{ckpt_symbol}.pth", map_location=device))
             model.eval()
 
             for j, test_symbol in enumerate(VN30):
-                _, _, test_loader, scaler = preprocess_v2(test_symbol, "cnn")
+                _, _, test_loader, scaler = preprocess_v2(test_symbol, "rnn")
 
                 all_preds = []
                 all_targets = []

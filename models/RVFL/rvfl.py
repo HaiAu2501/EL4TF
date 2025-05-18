@@ -143,7 +143,7 @@ def evaluate(*, symbol: str, model_init: Callable[[int], Model]) -> Metrics:
 
 output = ROOT / "models" / "RVFL" / "rvfl.csv"
 with output.open("w", encoding="utf-8", buffering=1) as csv:
-    csv.write("sep=,\n[R-squared] Model,")
+    csv.write("[R-squared] Model,")
     csv.write(",".join(VN30))
 
     csv.write("\nRVFL")
