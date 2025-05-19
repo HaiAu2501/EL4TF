@@ -335,6 +335,72 @@ def preprocess_v2(
 
     return train_loader, valid_loader, test_loader, scaler
     
+# For delta models
+def preprocess_v3(
+    symbol: str,
+    lag: int = 30,
+    val: float = 0.0,
+    verbose: bool = False,
+):
+    """
+    Xử lý dữ liệu cho dự đoán sai phân bậc 1.
+    - X đầu ra có shape (n_samples, lag * n_dimensions)
+    - Y đầu ra có shape (n_samples, n_dimensions)
+    Trả về dict với các bộ (X_train, Y_train), (X_val, Y_val), (X_test, Y_test) và scaler.
+    """
+    df_train, df_test = _process_file(symbol)
+    df_train = df_train[TARGETS].values
+    df_test = df_test[TARGETS].values
+
+    # Normalize the data
+    scaler = StandardScaler()
+    df_train = scaler.fit_transform(df_train)
+    df_test = scaler.transform(df_test)
+
+    X_full = []
+    Y_full = []
+
+    for i in range(len(df_train) - lag):
+        window = df_train[i : i + lag] # (lag, n_dimensions)
+        diff = df_train[i + lag] - df_train[i + lag - 1] # (n_dimensions,)
+        X_full.append(window.flatten())
+        Y_full.append(diff)
+
+    X_full = np.stack(X_full) # (n_samples, lag * n_dimensions)
+    Y_full = np.stack(Y_full) # (n_samples, n_dimensions)
+
+    X_test = []
+    Y_test = []
+
+    for i in range(len(df_test) - lag):
+        window = df_test[i : i + lag]
+        diff = df_test[i + lag] - df_test[i + lag - 1]
+        X_test.append(window.flatten())
+        Y_test.append(diff)
+
+    X_test = np.stack(X_test) # (n_samples, lag * n_dimensions)
+    Y_test = np.stack(Y_test) # (n_samples, n_dimensions)
+
+    n_samples = X_full.shape[0]
+    n_valid = int(n_samples * val)
+    n_train = n_samples - n_valid
+    
+    X_train = X_full[:n_train]
+    Y_train = Y_full[:n_train]
+    X_valid = X_full[n_train:]
+    Y_valid = Y_full[n_train:]
+
+    if verbose:
+        print(f"Train shape: {X_train.shape}, {Y_train.shape}")
+        print(f"Valid shape: {X_valid.shape}, {Y_valid.shape}")
+
+    return {
+        "train": (X_train, Y_train),
+        "val": (X_valid, Y_valid),
+        "test": (X_test, Y_test),
+        "scaler": scaler,
+    }
+
 # Example usage:
 # if __name__ == "__main__":
-#     preprocess_v1('ACB', 30, 0.15, verbose=True)
+#     preprocess_v3('ACB', verbose=True)
