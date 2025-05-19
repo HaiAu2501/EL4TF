@@ -21,7 +21,7 @@ from preprocess import VN30, preprocess_v2  # type: ignore  # noqa
 warnings.filterwarnings("ignore")
 
 
-class Transformer(nn.Module):
+class TFT(nn.Module):
     def __init__(
         self,
         input_dim: int = 4,    # số feature mỗi bước thời gian
@@ -89,7 +89,7 @@ class Transformer(nn.Module):
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Transformer()
+model = TFT()
 with open(CWD / "tft.csv", "w", encoding="utf-8", buffering=1) as csv:
     csv.write("Checkpoints/Tests,")
     csv.write(",".join(VN30))
