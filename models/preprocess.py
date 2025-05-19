@@ -227,7 +227,9 @@ def preprocess_v1(
     X_test = feature_scaler.transform(X_test)
     Y_test = target_scaler.transform(Y_test)
 
-    train_size = int(len(X_train_full) * (1 - val))
+    n_samples = X_train_full.shape[0]
+    valid_size = int(n_samples * val)
+    train_size = n_samples - valid_size
 
     X_train = X_train_full[:train_size]
     Y_train = Y_train_full[:train_size]
