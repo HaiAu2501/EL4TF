@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 
 class TCN(nn.Module):
-    def __init__(self, n_channels=5, window_size=30, hidden_dim=64, output_dim=5, p_dropout=0.2):
+    def __init__(self, n_channels=4, window_size=30, hidden_dim=256, output_dim=4, p_dropout=0.1):
         super().__init__()
         # Conv block với BatchNorm + Dropout
         self.conv_block = nn.Sequential(
@@ -53,47 +53,47 @@ class TCN(nn.Module):
         return x
 
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = TCN(
-    n_channels=4,
-    window_size=30,
-    hidden_dim=256,
-    output_dim=4,
-    p_dropout=0.1
-).to(device)
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# model = TCN(
+#     n_channels=4,
+#     window_size=30,
+#     hidden_dim=256,
+#     output_dim=4,
+#     p_dropout=0.1
+# ).to(device)
 
 
-with open(CWD / "tcn.csv", "w", encoding="utf-8", buffering=1) as csv:
-    csv.write("Checkpoints/Tests,")
-    csv.write(",".join(VN30))
-    csv.write("\n")
+# with open(CWD / "tcn.csv", "w", encoding="utf-8", buffering=1) as csv:
+#     csv.write("Checkpoints/Tests,")
+#     csv.write(",".join(VN30))
+#     csv.write("\n")
 
-    with torch.no_grad():
-        for i, ckpt_symbol in enumerate(VN30):
-            csv.write(ckpt_symbol)
-            model.load_state_dict(torch.load(CWD / "checkpoints" / f"tcn_{ckpt_symbol}.pth", map_location=device))
-            model.eval()
+#     with torch.no_grad():
+#         for i, ckpt_symbol in enumerate(VN30):
+#             csv.write(ckpt_symbol)
+#             model.load_state_dict(torch.load(CWD / "checkpoints" / f"tcn_{ckpt_symbol}.pth", map_location=device))
+#             model.eval()
 
-            for j, test_symbol in enumerate(VN30):
-                _, _, test_loader, scaler = preprocess_v2(test_symbol, "cnn")
+#             for j, test_symbol in enumerate(VN30):
+#                 _, _, test_loader, scaler = preprocess_v2(test_symbol, "cnn")
 
-                all_preds = []
-                all_targets = []
-                for X_batch, y_batch in test_loader:
-                    X_batch = X_batch.to(device)
-                    preds = model(X_batch).cpu().numpy()
-                    all_preds.append(preds)
-                    all_targets.append(y_batch.numpy())
+#                 all_preds = []
+#                 all_targets = []
+#                 for X_batch, y_batch in test_loader:
+#                     X_batch = X_batch.to(device)
+#                     preds = model(X_batch).cpu().numpy()
+#                     all_preds.append(preds)
+#                     all_targets.append(y_batch.numpy())
 
-                all_preds = numpy.vstack(all_preds)   # (n_samples, 5)
-                all_targets = numpy.vstack(all_targets)
+#                 all_preds = numpy.vstack(all_preds)   # (n_samples, 5)
+#                 all_targets = numpy.vstack(all_targets)
 
-                # Inverse scaling
-                all_preds_inv = scaler.inverse_transform(all_preds)
-                all_targets_inv = scaler.inverse_transform(all_targets)
+#                 # Inverse scaling
+#                 all_preds_inv = scaler.inverse_transform(all_preds)
+#                 all_targets_inv = scaler.inverse_transform(all_targets)
 
-                # Tính metrics
-                r2 = r2_score(all_targets_inv, all_preds_inv, multioutput='uniform_average')
-                csv.write(f",{r2}")
+#                 # Tính metrics
+#                 r2 = r2_score(all_targets_inv, all_preds_inv, multioutput='uniform_average')
+#                 csv.write(f",{r2}")
 
-            csv.write("\n")
+#             csv.write("\n")
