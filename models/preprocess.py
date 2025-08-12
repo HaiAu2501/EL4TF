@@ -152,12 +152,12 @@ def preprocess_v1(
     symbol: str,
     lag: int = 30,
     val: float = 0.0, 
-    calendar_feature: bool = True,
-    rolling_feature: bool = True,
-    technical_feature: bool = True,
-    nonlinear_feature: bool = True,
-    autocorr_feature: bool = True,
-    trend_feature: bool = True,
+    calendar_feature: bool = False,
+    rolling_feature: bool = False,
+    technical_feature: bool = False,
+    nonlinear_feature: bool = False,
+    autocorr_feature: bool = False,
+    trend_feature: bool = False,
     verbose: bool = False,
 ):
     """

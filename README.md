@@ -50,12 +50,15 @@ Our first phase of the project has been successfully completed with the followin
 
 <div align="center">
 
-| **Name**                | **Period**  | **Frequency** | **Sources**                                                                                       | **Folder**                  | **Task**       | **Type**     |
-| ----------------------- | ----------- | ------------- | ------------------------------------------------------------------------------------------------- | --------------------------- | -------------- | ------------ |
-| **3 Stocks & Bitcoin**  | 2013 - 2019 | Daily         | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [`data/stock`](data/stock)  | Regression     | Multivariate |
-| **Tesla Stock Price**   | 2017 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [`data/tesla`](data/tesla)  | Regression     | Multivariate |
-| **Daily Delhi Climate** | 2013 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [`data/delhi`](data/delhi)  | Regression     | Multivariate |
-| **Weather Prediction**  | 2012 - 2015 | Daily         | [Kaggle](https://www.kaggle.com/datasets/ananthr1/weather-prediction)                             | [`data/rainy`](data/rainy/) | Classification |              |
+| **Name**                | **Period**  | **Frequency** | **Sources**                                                                                       | **Folder**                  | **Task**       | **Type**    |
+| ----------------------- | ----------- | ------------- | ------------------------------------------------------------------------------------------------- | --------------------------- | -------------- | ----------- |
+| **3 Stocks & Bitcoin**  | 2013 - 2019 | Daily         | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [`data/stock`](data/stock)  | Regression     | Multi-task  |
+| **Tesla Stock Price**   | 2017 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [`data/tesla`](data/tesla)  | Regression     | Multi-task  |
+| **Daily Delhi Climate** | 2013 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [`data/delhi`](data/delhi)  | Regression     | Multi-task  |
+| **Weather Prediction**  | 2012 - 2015 | Daily         | [Kaggle](https://www.kaggle.com/datasets/ananthr1/weather-prediction)                             | [`data/rainy`](data/rainy/) | Classification | Binary      |
+| **VN30 Index**          | 2019 - 2025 | Daily         | Real-world                                                                                        | [`data/vn30`](data/vn30)    | Regression     | Multi-task  |
+| **VN30 Price**          | 2019 - 2025 | Daily         | Real-world                                                                                        | [`data/vn30`](data/price)   | Classification | Multi-class |
+| **VN30 Trend**          | 2019 - 2025 | Daily         | Real-world                                                                                        | [`data/vn30`](data/trend)   | Classification | Multi-task  |
 
 </div>
 
