@@ -17,7 +17,8 @@
 3. [📊 Data](#data)
    - [🗂 Dataset](#dataset)
 4. [🛠 Methodology](#methodology)
-5. [📈 Results](#results)
+5. [⭐ Quick Start](#quick-start)
+6. [📈 Results](#results)
 
 ---
 
@@ -65,6 +66,30 @@ Our first phase of the project has been successfully completed with the followin
 ## 🛠 Methodology
 
 🔬 The study implements various **ensemble learning models** to analyze their impact on forecasting accuracy.
+
+---
+
+## ⭐ Quick Start
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/HaiAu2501/EL4TF.git
+cd EL4TF
+```
+
+2. Create a virtual environment:
+
+```bash
+python -m venv env
+source env/bin/activate  # On Windows use `env\Scripts\activate`
+```
+
+3. Install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
