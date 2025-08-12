@@ -50,16 +50,16 @@ Our first phase of the project has been successfully completed with the followin
 
 <div align="center">
 
-| **Name**                | **Period**  | **Frequency** | **Sources**                                                                                       | **Folder**                                                  | **Task**       | **Type**    |
-| ----------------------- | ----------- | ------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------- | ----------- |
-| **3 Stocks & Bitcoin**  | 2013 - 2019 | Daily         | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [`data/stock`](data/stock)                                  | Regression     | Multi-task  |
-| **Tesla Stock Price**   | 2017 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [`data/tesla`](data/tesla)                                  | Regression     | Multi-task  |
-| **Daily Delhi Climate** | 2013 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [`data/delhi`](data/delhi)                                  | Regression     | Multi-task  |
-| **Weather Prediction**  | 2012 - 2015 | Daily         | [Kaggle](https://www.kaggle.com/datasets/ananthr1/weather-prediction)                             | [`data/rainy`](data/rainy/)                                 | Classification | Binary      |
-| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`vn30/regression`](data/vn30/regression/)                  | Regression     | Multi-task  |
-| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`vn30/multi_class`](data/vn30/multi_class_classification/) | Classification | Multi-class |
-| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`vn30/multi_task`](data/vn30/multi_task_classification/)   | Classification | Multi-task  |
-| **VN30**                | 2019 - 2025 | Daily         | Real-word                                                                                         | [`vn30/multi_label`](data/vn30/multi_label_classification/) | Classification | Multi-label |
+| **Name**                | **Period**  | **Frequency** | **Sources**                                                                                       | **Folder**                                             | **Task**       | **Type**    |
+| ----------------------- | ----------- | ------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------- | ----------- |
+| **3 Stocks & Bitcoin**  | 2013 - 2019 | Daily         | [Kaggle](https://www.kaggle.com/datasets/hershyandrew/amzn-dpz-btc-ntfx-adjusted-may-2013may2019) | [`data/stock`](data/stock)                             | Regression     | Multi-task  |
+| **Tesla Stock Price**   | 2017 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/rpaguirre/tesla-stock-price)                             | [`data/tesla`](data/tesla)                             | Regression     | Multi-task  |
+| **Daily Delhi Climate** | 2013 - 2017 | Daily         | [Kaggle](https://www.kaggle.com/datasets/sumanthvrao/daily-climate-time-series-data)              | [`data/delhi`](data/delhi)                             | Regression     | Multi-task  |
+| **Weather Prediction**  | 2012 - 2015 | Daily         | [Kaggle](https://www.kaggle.com/datasets/ananthr1/weather-prediction)                             | [`data/rainy`](data/rainy/)                            | Classification | Binary      |
+| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`regression`](data/vn30/regression/)                  | Regression     | Multi-task  |
+| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`multi_class`](data/vn30/multi_class_classification/) | Classification | Multi-class |
+| **VN30**                | 2019 - 2025 | Daily         | Real-world                                                                                        | [`multi_task`](data/vn30/multi_task_classification/)   | Classification | Multi-task  |
+| **VN30**                | 2019 - 2025 | Daily         | Real-word                                                                                         | [`multi_label`](data/vn30/multi_label_classification/) | Classification | Multi-label |
 
 </div>
 
