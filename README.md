@@ -1,22 +1,23 @@
 # 🌟 EL4TF: A Study on Ensemble Learning in Time-Series Forecasting 📊
 
-<div align="center">
-
-![image](assets/banner.png)
-
-</div>
-
 ## 🚀 News
 
 - **03/2025:** Project initiated.
+- **04/2025:** Initial results obtained.
+- **05/2025:** Report published.
+- **06/2025:** Phase 1 completed.
+- **08/2025:** Phase 2 initiated.
+
+📌 Stay tuned for upcoming updates! 🚀
 
 ## 📖 Table of Contents
 
 1. [📌 Introduction](#introduction)
-2. [📊 Data](#data)
+2. [👨‍💻 Contributors](#contributors)
+3. [📊 Data](#data)
    - [🗂 Dataset](#dataset)
-3. [🛠 Methodology](#methodology)
-4. [📈 Results](#results)
+4. [🛠 Methodology](#methodology)
+5. [📈 Results](#results)
 
 ---
 
@@ -25,6 +26,18 @@
 ⏳ Time series forecasting is a crucial task in various fields such as stock market prediction, weather forecasting, and sales forecasting. Traditional forecasting methods often rely on a single model to predict future values, which may not capture the complexity of the underlying data.
 
 🔍 In this study, we explore the effectiveness of **ensemble learning** in time series forecasting, leveraging different publicly available datasets.
+
+---
+
+## 👨‍💻 Contributors
+
+Our first phase of the project has been successfully completed with the following contributors:
+
+- Nguyễn Viết Tuấn Kiệt
+- Bùi Quang Phong
+- Nguyễn Thái Hòa
+- Lưu Thịnh Khang
+- Nguyễn Thanh Tuyển
 
 ---
 
@@ -58,8 +71,6 @@
 ## 📈 Results
 
 📊 The final results demonstrate how ensemble learning improves forecasting performance across multiple datasets.
-
-📌 Stay tuned for upcoming updates! 🚀
 
 ---
 
