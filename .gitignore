@@ -1,11 +1,5 @@
 __pycache__/
-.devcontainer/
-.env/
 .private/
 .vscode/
 env/
-outputs/
-venv/
 bin/
-Data/
-PYTORCH_NOTEBOOKS/
