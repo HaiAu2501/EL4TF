@@ -3,15 +3,11 @@ import numpy as np
 from ._load_vn30_meta import _process_file, VN30, TARGETS
 from sklearn.preprocessing import StandardScaler
 
-import pandas as pd
-import numpy as np
-from ._load_vn30_meta import _process_file, VN30, TARGETS
-from sklearn.preprocessing import StandardScaler
-
 def preprocess(
     symbol: str,
     lag: int = 30,
     lag_label: bool = False,
+    use_scaler: bool = False,
     val: float = 0.0, 
     verbose: bool = False,
 ):
@@ -79,10 +75,12 @@ def preprocess(
     X_train_full = df_train.drop(columns=TARGETS + ['label']).values
     X_test = df_test.drop(columns=TARGETS + ['label']).values
 
-    # Standardize
-    feature_scaler = StandardScaler()
-    X_train_full = feature_scaler.fit_transform(X_train_full)
-    X_test = feature_scaler.transform(X_test)
+    if use_scaler:
+        feature_scaler = StandardScaler()
+        X_train_full = feature_scaler.fit_transform(X_train_full)
+        X_test = feature_scaler.transform(X_test)
+
+    feature_scaler = None  # No scaler for tree-based models
 
     # Train / validation split
     n_samples = X_train_full.shape[0]
