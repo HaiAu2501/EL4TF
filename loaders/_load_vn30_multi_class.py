@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from ._load_vn30_meta import _process_file, VN30, TARGETS
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler
 
 def preprocess(
     symbol: str,
@@ -11,7 +11,7 @@ def preprocess(
     verbose: bool = False,
 ):
     """
-    Return preprocessed data for multi-class classification.
+    Return preprocessed data for multi-class classification (ordinal labels).
 
     Parameters:
         symbol (str): The stock symbol to preprocess.
@@ -22,14 +22,6 @@ def preprocess(
 
     Returns:
         dict: A dictionary containing the preprocessed train, validation, and test sets.
-            dict["train"]: (X_train, Y_train)
-            dict["val"]: (X_val, Y_val)
-            dict["test"]: (X_test, Y_test)
-            dict["scaler"]: {
-                "feature": feature_scaler,
-                "label": label_encoder,
-            }
-            dict["classes"]: list of class names
     """
 
     df_train, df_test = _process_file(symbol, folder="multi_class_classification")
@@ -38,7 +30,7 @@ def preprocess(
     df_train = df_train.drop(columns=['volume'])
     df_test = df_test.drop(columns=['volume'])
 
-    # Create linear encoding for labels: strong_down=-2, weak_down=-1, sideways=0, weak_up=1, strong_up=2
+    # Ordinal label mapping
     label_mapping = {
         'strong_down': -2,
         'weak_down': -1,
@@ -46,53 +38,43 @@ def preprocess(
         'weak_up': 1,
         'strong_up': 2
     }
-    
-    # Create lagged features for technical indicators
+
+    # Lag features for price data
     lag_train = {
         f'{feat}_lag_{i}': df_train[feat].shift(i)
         for feat in TARGETS
         for i in range(1, lag+1)
     }
-
     lag_test = {
         f'{feat}_lag_{i}': df_test[feat].shift(i)
         for feat in TARGETS
         for i in range(1, lag+1)
     }
 
-    # Add lagged label features if requested
+    # Lagged labels as features (if enabled)
     if lag_label:
-        # Encode labels with linear mapping
         df_train_label_encoded = df_train['label'].map(label_mapping)
         df_test_label_encoded = df_test['label'].map(label_mapping)
-        
-        # Create lagged label features
         for i in range(1, lag+1):
             lag_train[f'label_lag_{i}'] = df_train_label_encoded.shift(i)
             lag_test[f'label_lag_{i}'] = df_test_label_encoded.shift(i)
 
     # Add lagged features
     df_train = pd.concat([df_train, pd.DataFrame(lag_train, index=df_train.index)], axis=1)
-    df_train.dropna(inplace=True)  # Drop rows with NaN values after lagging
+    df_train.dropna(inplace=True)
     df_test = pd.concat([df_test, pd.DataFrame(lag_test, index=df_test.index)], axis=1)
-    df_test.dropna(inplace=True)  # Drop rows with NaN values after lagging
+    df_test.dropna(inplace=True)
 
-    # Split features and labels
+    # Drop time column
     df_train = df_train.drop(columns=['time'])
     df_test = df_test.drop(columns=['time'])
 
-    # Encode labels
-    label_encoder = LabelEncoder()
-    Y_train_full = label_encoder.fit_transform(df_train['label'])
-    Y_test = label_encoder.transform(df_test['label'])
-    
-    # Get class names
-    classes = label_encoder.classes_.tolist()
+    # Apply ordinal mapping to labels (output)
+    Y_train_full = df_train['label'].map(label_mapping).values
+    Y_test = df_test['label'].map(label_mapping).values
 
-    # Prepare features (exclude current prices, only use lagged)
+    # Prepare features
     feature_scaler = StandardScaler()
-    
-    # Get only lagged features, exclude current prices
     X_train_full = df_train.drop(columns=TARGETS + ['label']).values
     X_test = df_test.drop(columns=TARGETS + ['label']).values
 
@@ -100,7 +82,7 @@ def preprocess(
     X_train_full = feature_scaler.fit_transform(X_train_full)
     X_test = feature_scaler.transform(X_test)
 
-    # Split training data into train/validation
+    # Train/Val split
     n_samples = X_train_full.shape[0]
     valid_size = int(n_samples * val)
     train_size = n_samples - valid_size
@@ -114,11 +96,10 @@ def preprocess(
         print(f"=== Preprocessing {symbol} ===")
         print(f"Feature shapes in train: {X_train.shape}, val: {X_val.shape}, test: {X_test.shape}")
         print(f"Label shapes in train: {Y_train.shape}, val: {Y_val.shape}, test: {Y_test.shape}")
-        print(f"Classes: {classes}")
         print(f"Class distribution in training:")
         unique, counts = np.unique(Y_train, return_counts=True)
-        for cls_idx, count in zip(unique, counts):
-            print(f"  {classes[cls_idx]}: {count}")
+        for cls_val, count in zip(unique, counts):
+            print(f"  {cls_val}: {count}")
 
     return {
         "train": (X_train, Y_train),
@@ -126,7 +107,6 @@ def preprocess(
         "test": (X_test, Y_test),
         "scaler": {
             "feature": feature_scaler,
-            "label": label_encoder,
         },
-        "classes": classes
+        "classes": sorted(label_mapping.keys(), key=lambda k: label_mapping[k])
     }
