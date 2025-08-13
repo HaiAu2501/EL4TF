@@ -57,7 +57,7 @@ def preprocess(
     X_test = np.stack(X_test) # (n_samples, window_size, n_dimensions)
     Y_test = np.stack(Y_test) # (n_samples, n_dimensions)
 
-    if mode == 'cnn':
+    if mode == 'tcn':
         X_full = X_full.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
         X_test = X_test.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
 
