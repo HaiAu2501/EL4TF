@@ -1,4 +1,3 @@
-
 import sys
 from pathlib import Path
 
@@ -9,7 +8,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -20,14 +18,12 @@ from sklearn.metrics import (
 from loaders._load_vn30_meta import VN30
 from loaders._load_vn30_binary_hoang import preprocess
 
+from xgboost import XGBClassifier
+
 
 def to_numpy_features(X):
-    """
-    Convert features to numpy, clean NaN/Inf, clip extremes, cast to float64.
-    """
     if hasattr(X, "values"):
         X = X.values
-
     X = np.nan_to_num(X, nan=0.0, posinf=1e10, neginf=-1e10)
     X = np.clip(X, -1e10, 1e10)
     X = X.astype(np.float64)
@@ -35,42 +31,22 @@ def to_numpy_features(X):
 
 
 def to_numpy_labels(y):
-    """
-    Convert labels to numpy int64 1D array.
-    """
     if hasattr(y, "values"):
         y = y.values
     y = np.asarray(y).astype(np.int64).ravel()
     return y
 
 
-def train_and_evaluate_rf(X_train, y_train, X_test, y_test):
-    model = RandomForestClassifier(
-        n_estimators=10,
-        max_depth=None,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        max_features="log2",
-        random_state=42,
-        n_jobs=-1,
-    )
-
-    model.fit(X_train, y_train)
-
-    y_pred_train = model.predict(X_train)
-    y_pred_test = model.predict(X_test)
-
-    metrics = {
-        "train_accuracy": accuracy_score(y_train, y_pred_train),
-        "train_bal_accuracy": balanced_accuracy_score(y_train, y_pred_train),
-        "test_accuracy": accuracy_score(y_test, y_pred_test),
-        "test_bal_accuracy": balanced_accuracy_score(y_test, y_pred_test),
-        "confusion_matrix": confusion_matrix(y_test, y_pred_test).tolist(),
-        "classification_report": classification_report(y_test, y_pred_test, output_dict=True),
-        "feature_importances": getattr(model, "feature_importances_", None),
-    }
-
-    return model, metrics
+def tune_threshold_on_val(model, X_val, y_val):
+    # Use predicted probabilities and choose threshold that maximizes balanced accuracy
+    proba = model.predict_proba(X_val)[:, 1]
+    best_t, best_bal = 0.5, -1
+    for t in np.linspace(0.2, 0.8, 61):
+        preds = (proba >= t).astype(int)
+        bal = balanced_accuracy_score(y_val, preds)
+        if bal > best_bal:
+            best_t, best_bal = t, bal
+    return best_t, best_bal
 
 
 def main():
@@ -89,7 +65,7 @@ def main():
 
             feature_names = data["feature_names"]
 
-            # Validate feature set against anti-leakage constraints (no raw OHLCV or their lag variants)
+            # Anti-leakage: forbid raw OHLCV and lag variants
             forbidden_exact = {"open", "high", "low", "close", "volume"}
             forbidden_prefixes = ("open_lag_", "high_lag_", "low_lag_", "close_lag_", "volume_lag_")
             present_exact = forbidden_exact.intersection(set(feature_names))
@@ -107,39 +83,54 @@ def main():
             y_val_np = to_numpy_labels(y_val)
             y_test_np = to_numpy_labels(y_test)
 
-            # Merge val into train for final training (optional)
-            X_train_full = np.vstack([X_train_np, X_val_np])
-            y_train_full = np.concatenate([y_train_np, y_val_np])
-
-            # Train and evaluate
-            model, metrics = train_and_evaluate_rf(X_train_full, y_train_full, X_test_np, y_test_np)
-
-            # Persist key results
-            all_results[symbol] = {
-                "metrics": metrics,
-            }
-
-            # Print brief summary
-            print(
-                f"Train Acc: {metrics['train_accuracy']:.4f} | Test Acc: {metrics['test_accuracy']:.4f} | Test Bal Acc: {metrics['test_bal_accuracy']:.4f}"
+            # XGBoost classifier
+            model = XGBClassifier(
+                n_estimators=400,
+                max_depth=6,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                reg_lambda=1.0,
+                reg_alpha=0.0,
+                objective="binary:logistic",
+                eval_metric="logloss",
+                random_state=42,
+                tree_method="hist",
+                n_jobs=-1,
             )
 
-            # Top feature importances
-            if metrics["feature_importances"] is not None:
-                importances = pd.DataFrame(
-                    {
-                        "feature": feature_names,
-                        "importance": metrics["feature_importances"],
-                    }
-                ).sort_values("importance", ascending=False)
+            # Train on train only, tune threshold on val
+            model.fit(X_train_np, y_train_np)
+            best_t, best_bal = tune_threshold_on_val(model, X_val_np, y_val_np)
 
-                print("Top 10 features:")
-                print(importances.head(10))
+            # Predictions
+            proba_train = model.predict_proba(np.vstack([X_train_np, X_val_np]))[:, 1]
+            y_train_full = np.concatenate([y_train_np, y_val_np])
+            preds_train = (proba_train >= best_t).astype(int)
+
+            proba_test = model.predict_proba(X_test_np)[:, 1]
+            preds_test = (proba_test >= best_t).astype(int)
+
+            metrics = {
+                "threshold": best_t,
+                "val_bal_acc": best_bal,
+                "train_accuracy": accuracy_score(y_train_full, preds_train),
+                "train_bal_accuracy": balanced_accuracy_score(y_train_full, preds_train),
+                "test_accuracy": accuracy_score(y_test_np, preds_test),
+                "test_bal_accuracy": balanced_accuracy_score(y_test_np, preds_test),
+                "confusion_matrix": confusion_matrix(y_test_np, preds_test).tolist(),
+                "classification_report": classification_report(y_test_np, preds_test, output_dict=True),
+            }
+
+            all_results[symbol] = {"metrics": metrics}
+
+            print(
+                f"Thresh={metrics['threshold']:.3f} | Val Bal Acc: {metrics['val_bal_acc']:.4f} | Train Acc: {metrics['train_accuracy']:.4f} | Test Acc: {metrics['test_accuracy']:.4f} | Test Bal Acc: {metrics['test_bal_accuracy']:.4f}"
+            )
 
         except Exception as e:
             print(f"Error processing {symbol}: {e}")
             import traceback
-
             traceback.print_exc()
             continue
 
@@ -151,6 +142,8 @@ def main():
             summary_rows.append(
                 {
                     "Symbol": sym,
+                    "Thresh": m["threshold"],
+                    "Val_Bal_Acc": m["val_bal_acc"],
                     "Train_Acc": m["train_accuracy"],
                     "Test_Acc": m["test_accuracy"],
                     "Test_Bal_Acc": m["test_bal_accuracy"],
@@ -160,8 +153,8 @@ def main():
         summary_df = pd.DataFrame(summary_rows)
         print("\nSummary across symbols:")
         print(summary_df)
-        summary_df.to_csv("vn30_binary_random_forest_results.csv", index=False)
-        print("Saved summary to vn30_binary_random_forest_results.csv")
+        summary_df.to_csv("vn30_binary_xgboost_results.csv", index=False)
+        print("Saved summary to vn30_binary_xgboost_results.csv")
     else:
         print("No successful runs.")
 

@@ -14,24 +14,33 @@ def create_features(df: pd.DataFrame, lag: int = 30) -> pd.DataFrame:
     """
     df = df.copy()
 
-    # Basic returns and price range
-    df["returns"] = df["close"].pct_change()
-    df["price_range"] = (df["high"] - df["low"]) / (df["close"] + 1e-8)
+    # Shift raw series to ensure features use ONLY past information (no lookahead)
+    close_prev = df["close"].shift(1)
+    high_prev = df["high"].shift(1)
+    low_prev = df["low"].shift(1)
+    volume_prev = df["volume"].shift(1)
+
+    # Basic returns and price range (based on previous day's data)
+    df["returns"] = df["close"].pct_change().shift(1)
+    df["price_range"] = (high_prev - low_prev) / (close_prev + 1e-8)
 
     # Moving averages
-    df["ma5"] = df["close"].rolling(window=5).mean()
-    df["ma20"] = df["close"].rolling(window=20).mean()
+    df["ma5"] = close_prev.rolling(window=5).mean()
+    df["ma20"] = close_prev.rolling(window=20).mean()
 
     # Ratios vs moving averages (avoid div by zero)
-    df["close_ma5_ratio"] = df["close"] / (df["ma5"] + 1e-8)
-    df["close_ma20_ratio"] = df["close"] / (df["ma20"] + 1e-8)
+    df["close_ma5_ratio"] = close_prev / (df["ma5"] + 1e-8)
+    df["close_ma20_ratio"] = close_prev / (df["ma20"] + 1e-8)
 
     # Volume context
-    df["volume_ma5"] = df["volume"].rolling(window=5).mean()
-    df["volume_ratio"] = df["volume"] / (df["volume_ma5"] + 1e-8)
+    df["volume_ma5"] = volume_prev.rolling(window=5).mean()
+    df["volume_ratio"] = volume_prev / (df["volume_ma5"] + 1e-8)
+    
+    # Open gap (normalized open vs previous close) to avoid using raw open
+    df["open_gap"] = df["open"] / (close_prev + 1e-8) - 1
 
     # Momentum
-    df["momentum_5"] = df["close"] / (df["close"].shift(5) + 1e-8) - 1
+    df["momentum_5"] = close_prev / (close_prev.shift(5) + 1e-8) - 1
 
     # RSI-style features
     df["gain"] = np.where(df["returns"] > 0, df["returns"], 0)
@@ -41,7 +50,7 @@ def create_features(df: pd.DataFrame, lag: int = 30) -> pd.DataFrame:
     df["rs_14"] = df["avg_gain_14"] / (df["avg_loss_14"] + 1e-8)
     df["rsi_14"] = 100 - (100 / (1 + df["rs_14"]))
 
-    # Dynamic lag features (parity with multi-label)
+    # Dynamic lag features (parity with multi-label). These are all from the past.
     lag_periods = [1, 5, 10, 15, 20, 25, 30]
     if lag < 30:
         lag_periods = [p for p in lag_periods if p <= lag]
@@ -49,14 +58,15 @@ def create_features(df: pd.DataFrame, lag: int = 30) -> pd.DataFrame:
         lag_periods.extend([p for p in range(35, lag + 1, 5)])
 
     for p in lag_periods:
-        df[f"close_lag_{p}"] = df["close"].shift(p)
-        df[f"volume_lag_{p}"] = df["volume"].shift(p)
+        # Use only normalized/scale-free lags to avoid raw OHLC leakage
         df[f"returns_lag_{p}"] = df["returns"].shift(p)
 
-    # Volatility features and normalization
+    # Volatility features and normalization (based on past values)
     df["price_volatility"] = df["returns"].rolling(window=20).std()
-    df["volume_volatility"] = df["volume"].rolling(window=20).std()
-    df["volume_price_ratio"] = df["volume"] / (df["close"] + 1e-8)
+    # Use normalized volume volatility instead of raw scale
+    df["volume_returns"] = volume_prev.pct_change()
+    df["volume_volatility"] = df["volume_returns"].rolling(window=20).std()
+    df["volume_price_ratio"] = volume_prev / (close_prev + 1e-8)
 
     return df
 
@@ -104,6 +114,7 @@ def preprocess(
 
         # Select features (exclude raw OHLCV and target columns)
         label_column = "label"
+        # Exclude ALL raw OHLCV to avoid leakage and non-stationary scales
         base_exclude = ["time", "open", "high", "low", "close", "volume", label_column]
         feature_columns = [c for c in df_train_features.columns if c not in base_exclude]
 
