@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ._load_vn30_meta import _process_file, VN30, TARGETS, select_features
+from ._load_vn30_meta import _process_file, VN30, TARGETS, select_features, augment_features
 from collections import Counter
 
 def preprocess(
@@ -76,7 +76,12 @@ def preprocess(
 
     if feat_select:
         X_train_full, y_train_full, X_test, y_test = select_features(
-            X_train_full, y_train_full, X_test, y_test, frac=0.5
+            X_train_full, y_train_full, X_test, y_test, frac=0.5,
+        )
+
+    if feat_augment:
+        X_train_full, y_train_full = augment_features(
+            X_train_full, y_train_full,
         )
 
     if val > 0:
