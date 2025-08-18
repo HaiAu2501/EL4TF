@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ._load_vn30_meta import _process_file, VN30, TARGETS
+from ._load_vn30_meta import _process_file, VN30, TARGETS, select_features
 from collections import Counter
 
 def preprocess(
@@ -10,6 +10,8 @@ def preprocess(
     verbose: bool = False,
     use_rolling: bool = False,
     use_calendar: bool = False,
+    feat_select: bool = False,
+    feat_augment: bool = False
 ):
     df_train, df_test = _process_file(symbol, folder="binary")
 
@@ -71,6 +73,11 @@ def preprocess(
 
     mask_te = X_test.notna().all(axis=1)
     X_test, y_test = X_test[mask_te], y_test[mask_te]
+
+    if feat_select:
+        X_train_full, y_train_full, X_test, y_test = select_features(
+            X_train_full, y_train_full, X_test, y_test, frac=0.5
+        )
 
     if val > 0:
         n_tr = int(len(X_train_full) * (1 - val))
