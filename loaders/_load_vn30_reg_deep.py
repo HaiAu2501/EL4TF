@@ -7,7 +7,7 @@ from typing import Literal
 
 def preprocess(
 	symbol: str,
-    mode: Literal['tcn', 'lstm', 'tft'],
+    mode: Literal['tcn', 'lstm', 'tft', 'mlp'],
 	lag: int = 30,
 	val: float = 0.1,
 	batch_size: int = 32,
@@ -56,6 +56,10 @@ def preprocess(
     if mode == 'tcn':
         X_full = X_full.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
         X_test = X_test.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
+
+    if mode == 'mlp':
+        X_full = X_full.reshape(X_full.shape[0], -1)  # (n_samples, n_dimensions * window_size)
+        X_test = X_test.reshape(X_test.shape[0], -1)  # (n_samples, n_dimensions * window_size)
 
     n_samples = X_full.shape[0]
     n_valid = int(n_samples * val)
