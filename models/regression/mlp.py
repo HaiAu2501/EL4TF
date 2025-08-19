@@ -24,7 +24,7 @@ def bits_to_upper_tri(mask_bits: List[int], L: int) -> torch.Tensor:
             idx += 1
     return M  # shape [L, L], upper-tri (strictly below diagonal)
 
-class MultiLayerPerception(nn.Module):
+class MultiLayerPerceptron(nn.Module):
     """
     MLP nhỏ gọn cho regression, genome chỉ mã hoá skip connections giữa các hidden layers.
     - Số layer ẩn và hidden_dim cố định nhỏ để train nhanh.

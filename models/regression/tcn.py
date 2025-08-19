@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class TemporalConvolutionalNetwork(nn.Module):
-    def __init__(self, n_channels=4, hidden_dim=64, output_dim=4, p_dropout=0.2):
+    def __init__(self, n_channels=4, hidden_dim=256, output_dim=4, p_dropout=0.1):
         super().__init__()
         # Conv block với BatchNorm + Dropout
         self.conv_block = nn.Sequential(
