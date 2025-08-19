@@ -33,34 +33,28 @@ def preprocess(
     df_train = df_train.drop(columns=['volume'])
     df_test = df_test.drop(columns=['volume'])
 
-    lag_train = {
-        f'{feat}_lag_{i}': df_train[feat].shift(i)
+    test_size = len(df_test)
+    df_all = pd.concat([df_train, df_test], ignore_index=True)
+
+    lag_all = {
+        f'{feat}_lag_{i}': df_all[feat].shift(i)
         for feat in TARGETS
         for i in range(1, lag+1)
     }
 
-    lag_test = {
-        f'{feat}_lag_{i}': df_test[feat].shift(i)
-        for feat in TARGETS
-        for i in range(1, lag+1)
-    }
+    df_all = pd.concat([df_all, pd.DataFrame(lag_all, index=df_all.index)], axis=1)
+    df_all.dropna(inplace=True)  # Drop rows with NaN values after lagging
 
-    df_train = pd.concat([df_train, pd.DataFrame(lag_train, index=df_train.index)], axis=1)
-    df_train.dropna(inplace=True)  # Drop rows with NaN values after lagging
-    df_test = pd.concat([df_test, pd.DataFrame(lag_test, index=df_test.index)], axis=1)
-    df_test.dropna(inplace=True)  # Drop rows with NaN values after lagging
+    df_all = df_all.drop(columns=['time'])
 
-    # Split features and target
-    df_train = df_train.drop(columns=['time'])
-    df_test = df_test.drop(columns=['time'])
+    X = df_all.drop(columns=TARGETS).values
+    Y = df_all[TARGETS].values
+
+    X_train_full, X_test = X[:-test_size], X[-test_size:]
+    Y_train_full, Y_test = Y[:-test_size], Y[-test_size:]
 
     feature_scaler = StandardScaler()
     target_scaler = StandardScaler()
-
-    X_train_full = df_train.drop(columns=TARGETS).values
-    Y_train_full = df_train[TARGETS].values
-    X_test = df_test.drop(columns=TARGETS).values
-    Y_test = df_test[TARGETS].values
 
     # Normalize the data
     X_train_full = feature_scaler.fit_transform(X_train_full)
