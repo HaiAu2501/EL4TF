@@ -7,7 +7,7 @@ from typing import Literal
 
 def preprocess(
 	symbol: str,
-    mode: Literal['tcn', 'lstm', 'tft'],
+    mode: Literal['tcn', 'lstm', 'tft', 'mlp'],
 	lag: int = 30,
 	val: float = 0.1,
 	batch_size: int = 32,
@@ -37,29 +37,29 @@ def preprocess(
     df_train = scaler.fit_transform(df_train)
     df_test = scaler.transform(df_test)
 
+    test_size = len(df_test)
+    df_all = np.concatenate([df_train, df_test], axis=0)
+
     X_full = []
     Y_full = []
 
-    for i in range(len(df_train) - lag):
-        X_full.append(df_train[i : i + lag]) # (window_size, n_dimensions)
-        Y_full.append(df_train[i + lag]) # (n_dimensions,)
+    for i in range(len(df_all) - lag):
+        X_full.append(df_all[i : i + lag])
+        Y_full.append(df_all[i + lag])
 
     X_full = np.stack(X_full) # (n_samples, window_size, n_dimensions)
     Y_full = np.stack(Y_full) # (n_samples, n_dimensions)
 
-    X_test = []
-    Y_test = []
-
-    for i in range(len(df_test) - lag):
-        X_test.append(df_test[i : i + lag])
-        Y_test.append(df_test[i + lag])
-
-    X_test = np.stack(X_test) # (n_samples, window_size, n_dimensions)
-    Y_test = np.stack(Y_test) # (n_samples, n_dimensions)
+    X_test, Y_test = X_full[-test_size:], Y_full[-test_size:]
+    X_full, Y_full = X_full[:-test_size], Y_full[:-test_size]
 
     if mode == 'tcn':
         X_full = X_full.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
         X_test = X_test.transpose(0, 2, 1) # (n_samples, n_dimensions, window_size)
+
+    if mode == 'mlp':
+        X_full = X_full.reshape(X_full.shape[0], -1)  # (n_samples, n_dimensions * window_size)
+        X_test = X_test.reshape(X_test.shape[0], -1)  # (n_samples, n_dimensions * window_size)
 
     n_samples = X_full.shape[0]
     n_valid = int(n_samples * val)
@@ -88,5 +88,6 @@ def preprocess(
     if verbose:
         print(f"Train shape: {X_train.shape}, {Y_train.shape}")
         print(f"Valid shape: {X_valid.shape}, {Y_valid.shape}")
+        print(f"Test shape: {X_test.shape}, {Y_test.shape}")
 
     return train_loader, valid_loader, test_loader, scaler
