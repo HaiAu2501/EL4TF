@@ -162,7 +162,7 @@ def process_all_files(folder_path):
     results_df.to_csv('experiments/multi_class_classification/multi_class_results.csv', index=False)
     return results_df
 
-# 7. Main execution (Đã cập nhật đường dẫn)
+# 7. Main execution 
 if __name__ == "__main__":
     # Tạo các thư mục cần thiết
     os.makedirs('checkpoints', exist_ok=True)
