@@ -33,9 +33,9 @@ jobs:
       # 4. Chạy notebook
       - name: Run notebook ${{ github.event.inputs.name }}
         run: |
-          cd experiments
-          jupyter nbconvert --to notebook --execute ${{ github.event.inputs.name}}.ipynb \
-                  --output ${{ github.event.inputs.name}}.ipynb
+          jupyter nbconvert --to notebook \
+                  --execute experiments/${{ github.event.inputs.name}}.ipynb \
+                  --output experiments/${{ github.event.inputs.name}}.ipynb
 
       # 5. Commit & push kết quả
       - name: Commit and push changes
