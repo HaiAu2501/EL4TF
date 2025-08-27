@@ -1,6 +1,6 @@
 # 🌟 EL4TF: A Study on Ensemble Learning in Time-Series Forecasting 📊
 
-## 🚀 News
+## News
 
 - **03/2025:** Project initiated.
 - **04/2025:** Initial results obtained.
@@ -10,19 +10,7 @@
 
 📌 Stay tuned for upcoming updates! 🚀
 
-## 📖 Table of Contents
-
-1. [📌 Introduction](#introduction)
-2. [👨‍💻 Contributors](#contributors)
-3. [📊 Data](#data)
-   - [🗂 Dataset](#dataset)
-4. [🛠 Methodology](#methodology)
-5. [⭐ Quick Start](#quick-start)
-6. [📈 Results](#results)
-
----
-
-## 📌 Introduction
+## Introduction
 
 ⏳ Time series forecasting is a crucial task in various fields such as stock market prediction, weather forecasting, and sales forecasting. Traditional forecasting methods often rely on a single model to predict future values, which may not capture the complexity of the underlying data.
 
@@ -30,9 +18,12 @@
 
 ---
 
-## 👨‍💻 Contributors
+## Contributors
 
-Our first phase of the project has been successfully completed with the following contributors:
+We are grateful to the dedicated individuals who have contributed to the success of this project.
+
+**Phase 1 Contributors:**  
+The following members played a pivotal role in completing the first phase:
 
 - Nguyễn Viết Tuấn Kiệt
 - Bùi Quang Phong
@@ -40,13 +31,22 @@ Our first phase of the project has been successfully completed with the followin
 - Lưu Thịnh Khang
 - Nguyễn Thanh Tuyển
 
+**Phase 2 Contributors:**  
+As we move into the second phase, we extend our appreciation to those who are helping us enhance our models and explore new datasets:
+
+- Nguyễn Đức An
+- Nguyễn Trọng Tâm
+- Phạm Quang Nguyên Hoàng
+- Trần Ngọc Lâm
+- Đào Chí Hiển
+
 ---
 
-## 📊 Data
+## Experiments
 
-### 🗂 Dataset
+### Dataset
 
-📁 **All datasets used in this study are publicly available on Kaggle and stored in the `data/` folder.**
+**All datasets used in this study are publicly available on Kaggle and stored in the `data/` folder.**
 
 <div align="center">
 
@@ -63,15 +63,20 @@ Our first phase of the project has been successfully completed with the followin
 
 </div>
 
----
-
-## 🛠 Methodology
+### Methodology
 
 🔬 The study implements various **ensemble learning models** to analyze their impact on forecasting accuracy.
 
+We aim to enhance the performance of individual models by combining their predictions using ensemble techniques. To achieve this, we implement several advanced methods to improve the robustness and accuracy of our forecasts, including:
+
+- **Metric Learning in K-Nearest Neighbors (KNN):** Optimizing distance metrics to improve neighbor selection and prediction accuracy.
+- **Forest Building via Diversity-Oriented Subsampling and Posterior Estimation:** Leveraging diverse subsets of data to construct more generalized and accurate ensemble models.
+- **Feature Engineering and Selection Techniques Based on Distributional Properties:** Identifying and selecting features that capture the underlying data distribution effectively.
+- **Semi-Supervised Learning as an Intermediate Approach:** Utilizing both labeled and unlabeled data to enhance model training and prediction performance.
+
 ---
 
-## ⭐ Quick Start
+## Quick Start
 
 1. Clone the repository:
 
@@ -95,10 +100,10 @@ pip install -r requirements.txt
 
 ---
 
-## 📈 Results
+## Results
 
 📊 The final results demonstrate how ensemble learning improves forecasting performance across multiple datasets.
 
 ---
 
-### 📝 **Author & Contact**
+## Author & Contact
