@@ -9,7 +9,7 @@ on:
         default: ""
 
 permissions:
-  contents: write # để commit & push
+  contents: write
 
 jobs:
   run-notebook:
