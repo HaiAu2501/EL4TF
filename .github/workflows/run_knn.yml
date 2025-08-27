@@ -1,0 +1,40 @@
+name: RUN NOTEBOOK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      # 3. Cài đặt dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jupyter nbconvert
+
+      # 4. Chạy notebook
+      - name: Run notebook
+        run: |
+          cd experiments/binary
+          jupyter nbconvert --to notebook --execute synt_knn.ipynb --output synt_knn.ipynb
+
+      # 5. Commit & push kết quả
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add experiments/binary/synt_knn.ipynb
+          git commit -m "Update notebook results [skip ci]" || echo "No changes to commit"
+          git push
