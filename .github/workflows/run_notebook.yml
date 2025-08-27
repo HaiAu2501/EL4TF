@@ -2,6 +2,11 @@ name: RUN NOTEBOOK
 
 on:
   workflow_dispatch:
+    inputs:
+      name:
+        description: "NOTEBOOK NAME"
+        required: true
+        default: ""
 
 jobs:
   run-notebook:
@@ -26,16 +31,17 @@ jobs:
           pip install jupyter nbconvert
 
       # 4. Chạy notebook
-      - name: Run notebook
+      - name: Run notebook ${{ github.event.inputs.name }}
         run: |
-          cd experiments/binary
-          jupyter nbconvert --to notebook --execute synt_knn.ipynb --output synt_knn.ipynb
+          cd experiments
+          jupyter nbconvert --to notebook --execute ${{ github.event.inputs.name}}.ipynb \
+                  --output ${{ github.event.inputs.name}}.ipynb
 
       # 5. Commit & push kết quả
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add experiments/binary/synt_knn.ipynb
+          git add experiments/${{ github.event.inputs.name }}.ipynb
           git commit -m "Update notebook results [skip ci]" || echo "No changes to commit"
           git push
