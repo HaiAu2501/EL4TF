@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Tuple
+from sklearn.preprocessing import StandardScaler
+from collections import Counter
 
 def generate_data(
     n_samples: int = 2000,
@@ -12,6 +14,7 @@ def generate_data(
     ratio: List[float] = [0.8, 0.0, 0.2],
     lag: int = 5,
     seed: int = 0,
+    use_scaler: bool = True, # Tree model don't need scaling
     verbose: bool = False
 ) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
     """
@@ -88,11 +91,20 @@ def generate_data(
     if verbose:
         print(f"Generated dataset with {n_samples} samples.")
         print(f"Shapes: [{X_train.shape}, {X_val.shape}, {X_test.shape}]")
+        print(f"Label distribution: {Counter(y_train)}")
+        print(f"[WARNING] If you use a tree-based model, consider setting use_scaler=False.")
+
+    if use_scaler:
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        if len(X_val) > 0:
+            X_val = scaler.transform(X_val)
+        X_test = scaler.transform(X_test)
 
     dataset = {
         "train": (X_train, y_train),
         "val":   (X_val,   y_val),
-        "test":  (X_test,  y_test),
+        "test":  (X_test,  y_test),     
     }
 
     return dataset
